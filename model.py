@@ -13,12 +13,11 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image, ExifTags, UnidentifiedImageError
 import imagehash
-from sklearn.cluster import KMeans
 
 # === CONFIGURATION ===
 SOURCE_DIR = "/Users/wconway/Library/CloudStorage/Box-Box/cumulus_transfer"      # Folder with downloaded photos
-ORGANIZED_DIR = "/Users/wconway/Documents/cumulus_organized"                     # Folder to store organized subfolders
-CURATED_DIR = "/Users/wconway/Documents/curated_photos"                          # Folder to store curated selections
+ORGANIZED_DIR = "/Users/wconway/Documents/cumulus_test"                           # Folder to store organized subfolders
+CURATED_DIR = "/Users/wconway/Documents/curated_photos"                           # Folder to store curated selections
 ORG_LOG_FILE = "organization_log.csv"                                            # CSV log for organization
 CUR_LOG_FILE = "curated_log.csv"                                                 # CSV log for curated selections
 
@@ -35,9 +34,9 @@ SIMILARITY_THRESHOLD = 0.7
 # Advanced Aesthetic Model Setup
 # ---------------------------
 try:
-    # Example: Load an advanced aesthetic predictor from Torch Hub.
-    # (Replace 'smoosch/awesome-aesthetic-predictor' and 'aesthetic_predictor' with your model if needed.)
-    aesthetic_model = torch.hub.load('catfishbilliam/aesthetic_model', 'aesthetic_model', pretrained=True)
+    # Load your advanced aesthetic model from your GitHub repo.
+    # Ensure your repository is public and has a valid hubconf.py with a function named 'aesthetic_model'.
+    aesthetic_model = torch.hub.load('catfishbilliam/aesthetic_model', 'aesthetic_model', pretrained=True, trust_repo=True)
     aesthetic_model.eval()
     aesthetic_model.to('cpu')
     print("Advanced aesthetic model loaded successfully.")
@@ -160,7 +159,7 @@ def composite_group_key(file: Path) -> str:
         return f"{group_key}_{date_str}"
 
 # ---------------------------
-# Content Check via pHash
+# pHash Content Check
 # ---------------------------
 def check_content_similarity(target_folder: Path, file: Path, threshold: int = PHASH_THRESHOLD) -> bool:
     phash_file = get_image_phash(file)
@@ -190,7 +189,7 @@ def curate_group(files: List[Path]) -> Optional[Path]:
     return best_file
 
 # ---------------------------
-# Main Workflow: Grouping into Subfolders and Curation (Test on First 20 Images)
+# Main Test Workflow: Process First 50 Images, Group & Curate
 # ---------------------------
 def main():
     source = Path(SOURCE_DIR)
@@ -199,11 +198,11 @@ def main():
     organized.mkdir(parents=True, exist_ok=True)
     curated.mkdir(parents=True, exist_ok=True)
     
-    # Step 1: Recursively gather allowed photo files from the source folder
+    # Step 1: Gather allowed images from the source folder (recursively)
     image_files = [f for f in source.rglob("*") if f.is_file() and is_allowed_file(f)]
     print(f"Found {len(image_files)} images in source.")
     
-    # Process only the first 20 images for testing
+    # Process only the first 50 images for testing
     test_files = image_files[:50]
     print(f"Processing first {len(test_files)} images for test.")
     
@@ -214,7 +213,7 @@ def main():
         groups.setdefault(key, []).append(file)
     print(f"Formed {len(groups)} groups based on naming and creation date.")
     
-    # Step 3: For each group, move images into subfolders in ORGANIZED_DIR.
+    # Step 3: Move images into subfolders in ORGANIZED_DIR.
     org_log_entries = []
     for group_key, files in groups.items():
         target_folder = organized / group_key
@@ -231,11 +230,11 @@ def main():
             print(f"Moved '{file.name}' to folder '{group_key}'")
     
     # Write organization log CSV
-    with open("organization_log.csv", "w", newline="", encoding="utf-8") as f:
+    with open(ORG_LOG_FILE, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["filename", "original_path", "new_path", "group_key", "timestamp"])
         writer.writerows(org_log_entries)
-    print("Organization log saved to organization_log.csv")
+    print(f"Organization log saved to {ORG_LOG_FILE}")
     
     # Step 4: For each group subfolder in ORGANIZED_DIR, curate the best photo and copy it to CURATED_DIR.
     curated_log = []
@@ -269,13 +268,13 @@ def main():
                 print(f"  Curated '{best_image.name}' to folder '{target_curated_folder.name}'")
     
     # Write curated log CSV
-    curated_csv = Path("curated_log.csv")
-    with open(curated_csv, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["group", "filename", "original_path", "curated_path", "aesthetic_score", "created_at"])
+    with open(CUR_LOG_FILE, "w", newline="", encoding="utf-8") as f:
+        fieldnames = ["group", "filename", "original_path", "curated_path", "aesthetic_score", "created_at"]
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for row in curated_log:
             writer.writerow(row)
-    print(f"\nCuration complete. Log saved to {curated_csv}")
+    print(f"\nCuration complete. Curated log saved to {CUR_LOG_FILE}")
 
 if __name__ == "__main__":
     main()

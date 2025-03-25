@@ -1,7 +1,7 @@
 import torch
-from model import MyAestheticModel  # Your model implementation
 
 def aesthetic_model(pretrained=True, **kwargs):
+    # Delay the import until the function is called
     from model import MyAestheticModel
     model = MyAestheticModel(**kwargs)
     if pretrained:
@@ -12,5 +12,3 @@ def aesthetic_model(pretrained=True, **kwargs):
         model.load_state_dict(checkpoint)
     model.eval()
     return model
-
-

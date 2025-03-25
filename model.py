@@ -204,7 +204,7 @@ def main():
     print(f"Found {len(image_files)} images in source.")
     
     # Process only the first 20 images for testing
-    test_files = image_files[:20]
+    test_files = image_files[:50]
     print(f"Processing first {len(test_files)} images for test.")
     
     # Step 2: Group images into subfolders in ORGANIZED_DIR based on composite key (filename + creation date)

@@ -37,7 +37,7 @@ SIMILARITY_THRESHOLD = 0.7
 try:
     # Example: Load an advanced aesthetic predictor from Torch Hub.
     # (Replace 'smoosch/awesome-aesthetic-predictor' and 'aesthetic_predictor' with your model if needed.)
-    aesthetic_model = torch.hub.load('smoosch/awesome-aesthetic-predictor', 'aesthetic_predictor', pretrained=True)
+    aesthetic_model = torch.hub.load('catfishbilliam/aesthetic_model', 'aesthetic_model', pretrained=True)
     aesthetic_model.eval()
     aesthetic_model.to('cpu')
     print("Advanced aesthetic model loaded successfully.")

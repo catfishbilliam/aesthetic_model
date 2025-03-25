@@ -1,8 +1,9 @@
 import torch
 
+dependencies = ["torch"]  # <-- Optional but recommended
 
 def aesthetic_model(pretrained=True, **kwargs):
-    from my_model import MyAestheticModel  # now importing from a different file
+    from model_def import MyAestheticModel
     model = MyAestheticModel(**kwargs)
     if pretrained:
         checkpoint = torch.hub.load_state_dict_from_url(

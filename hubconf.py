@@ -1,8 +1,8 @@
 import torch
 
+
 def aesthetic_model(pretrained=True, **kwargs):
-    # Delay the import until the function is called
-    from model import MyAestheticModel
+    from my_model import MyAestheticModel  # now importing from a different file
     model = MyAestheticModel(**kwargs)
     if pretrained:
         checkpoint = torch.hub.load_state_dict_from_url(
